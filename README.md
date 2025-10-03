@@ -2,96 +2,9 @@
 
 An automated end-to-end pipeline that discovers Amazon products, collects reviews, analyzes them with AI, and generates professional HTML reports.
 
-## Features
-
-- 🔍 **Product Discovery**: Search any Amazon domain with complex filters using SERP API
-- 📊 **Smart Selection**: Automatically selects top 10 products by rating, review count, and price
-- 🤖 **AI Analysis**: Uses Gemini AI to extract product strengths and concerns from reviews
-- 📄 **HTML Reports**: Generates beautiful, professional HTML reports with all analysis
-- 💾 **Complete Data Export**: Saves all intermediate data (SERP, product data, reviews, analysis) to JSON
-- ⚙️ **YAML Configuration**: Zero CLI arguments needed - everything configured in one file
-- 🚀 **Auto-Launch**: Opens generated report in browser automatically
-
 ## Configuration
 
 All settings are managed through `config.yaml`. Simply edit the file and run the scraper.
-
-### Configuration File Structure
-
-```yaml
-# Search query
-query: "garage wall hooks heavy duty"
-
-# Amazon domain to search
-amazon_domain: "amazon.com.au"
-
-# Language setting
-language: "amazon.com.au|en_AU"
-
-# Shipping location filter
-shipping_location: "AU"
-
-# Pagination
-pages: 2
-delay: 1.0
-
-# Refinement filters (rh parameter)
-refinements:
-  # Prime Domestic shipping filter
-  p_n_prime_domestic: "6845356051"
-
-  # Price range (in cents)
-  p_36: "3000-8000"  # $30-$80
-
-# Sort parameter
-sort: "review-rank"
-
-# Client-side filtering
-client_filters:
-  min_rating: 4.6
-  min_reviews: 100
-
-# Output settings
-output:
-  filename_prefix: "garage_hooks"
-  output_dir: "data"
-```
-
-### Configuration Options
-
-#### Basic Settings
-
-- **query**: Search keywords (e.g., "laptop stand", "wireless mouse")
-- **amazon_domain**: Target Amazon domain (e.g., `amazon.com.au`, `amazon.com`, `amazon.co.uk`)
-- **language**: Domain and locale (e.g., `amazon.com.au|en_AU`, `amazon.com|en_US`)
-- **shipping_location**: 2-letter country code for shipping filter (e.g., `AU`, `US`, `GB`)
-
-#### Refinement Filters
-
-**p_n_prime_domestic**: Prime Domestic shipping filter
-- `6845356051` - Amazon AU Prime Domestic
-- `null` - Disable filter
-
-**p_36**: Price range in cents
-- `1000-2500` - $10-$25
-- `2500-5000` - $25-$50
-- `3000-8000` - $30-$80
-- `5000-10000` - $50-$100
-- `null` - Disable price filter
-
-#### Sort Options
-
-- `"review-rank"` - Most reviewed products first
-- `"price-asc-rank"` - Price: Low to High
-- `"price-desc-rank"` - Price: High to Low
-- `"date-desc-rank"` - Newest arrivals first
-- `"exact-aware-popularity-rank"` - Amazon's popularity algorithm
-- `null` - Default relevance ranking
-
-#### Client-Side Filters
-
-- **min_rating**: Minimum product rating (1.0-5.0, or `null`)
-- **min_reviews**: Minimum number of reviews (or `null`)
 
 ## Quick Start
 
@@ -145,47 +58,19 @@ python3 regenerate_html.py data/20251003-144207-magnetic-blocks-for-kids-100-p
 - **Pagination**: Amazon typically returns ~48 products per page, with limits around 7-10 pages
 - **Price Filters**: Use `p_36` parameter with price in cents (e.g., 3000 = $30)
 
-## Architecture
-
-```
-amzn-sandbox/
-├── src/
-│   ├── serp_handler.py        # SERP API handler (AmazonScraper class)
-│   ├── rainforest_handler.py  # Rainforest API handler (product data)
-│   ├── apify_handler.py       # Apify API handler (review collection)
-│   ├── brightdata_handler.py  # BrightData API handler (review collection)
-│   ├── gemini_handler.py      # Gemini AI handler (review analysis)
-│   ├── report_generator.py    # HTML report generator
-│   ├── models.py              # Product & SearchResult Pydantic models
-│   ├── utils.py               # JSON export + data parsing functions
-│   └── __init__.py            # Package file
-├── data/                      # Output folder for pipeline runs
-├── config.yaml                # Configuration file (all settings)
-├── pipeline.py                # Main pipeline orchestrator
-├── regenerate_html.py         # HTML report regeneration script
-├── test_rainforest.py         # Test script for Rainforest API
-├── test_apify.py              # Test script for Apify API
-├── test_brightdata.py         # Test script for BrightData API
-├── test_gemini.py             # Test script for Gemini API
-├── test_prompt.py             # Test script for Gemini prompt preview
-├── requirements.txt           # Dependencies
-├── .env.example               # API key template
-└── .env                       # Actual API keys (gitignored)
-```
-
 ## API Integrations
 
 ### SERP API (Product Search)
 - **Purpose**: Search Amazon for products with complex filters
 - **Handler**: `src/serp_handler.py`
-- **Status**: ✅ Production ready
-- **API Budget**: 250 requests total
+- **Status**: Production ready
+- **API Budget**: 250 requests total on free account
 
 ### Rainforest API (Product Data)
 - **Purpose**: Fetch detailed product data and reviews
 - **Handler**: `src/rainforest_handler.py`
 - **Test Script**: `test_rainforest.py`
-- **Status**: ⚠️ Product endpoint working, reviews endpoint temporarily unavailable
+- **Status**: ⚠️ Product endpoint working, reviews endpoint temporarily unavailable (unlikely to become available)
 - **Methods**:
   - `get_product_data(asin, amazon_domain)` - Fetch complete product data
   - `get_product_reviews(asin, amazon_domain, page)` - Fetch reviews by page (unavailable)
@@ -197,7 +82,7 @@ amzn-sandbox/
 - **Purpose**: Fetch product reviews using Apify actors
 - **Handler**: `src/apify_handler.py`
 - **Test Script**: `test_apify.py`
-- **Status**: ✅ Working successfully
+- **Status**: Production ready
 - **Actor**: `junglee~amazon-reviews-scraper`
 - **Methods**:
   - `run_actor(input_data)` - Trigger actor with input configuration
@@ -213,21 +98,21 @@ amzn-sandbox/
 - **Purpose**: Fetch detailed product reviews via real-time browser scraping
 - **Handler**: `src/brightdata_handler.py`
 - **Test Script**: `test_brightdata.py`
-- **Status**: ✅ Working (preview mode)
+- **Status**: Production ready
 - **Dataset ID**: `gd_le8e811kzy4ggddlq`
 - **Methods**:
   - `trigger_collection(amazon_url, limit_per_input, limit_multiple_results)` - Trigger collection
   - `get_snapshot_data(snapshot_id)` - Poll for snapshot data
   - `get_product_reviews(asin, amazon_url, domain, limit_multiple_results)` - Fetch reviews by ASIN or URL
 - **Performance**: ~2-3 minutes per product (browser-based scraping with anti-bot evasion)
-- **Account Limitations**: Preview mode returns 6-7 reviews per product (verified accounts get more)
+- **Account Limitations**: Preview mode returns 6-7 reviews per product (unverified account, unknown if this limit is lifted after verification)
 - **Output**: Includes review_text, review_header, rating, author_name, is_verified, helpful_count
 
 ### Gemini API (Review Analysis)
 - **Purpose**: Analyze product reviews to extract strengths and concerns using AI
 - **Handler**: `src/gemini_handler.py`
 - **Test Scripts**: `test_gemini.py` (full test), `test_prompt.py` (prompt preview)
-- **Status**: ✅ Working successfully
+- **Status**: Production ready
 - **Model**: `gemini-2.5-flash`
 - **Methods**:
   - `analyze_reviews(product_title, product_description, reviews)` - Analyze reviews and return strengths/concerns
@@ -274,7 +159,7 @@ python3 test_brightdata.py
 # Preview prompt without API call
 python3 test_prompt.py
 
-# Full test with API call
+# Full test with API call - needs to be pointed to correct files
 python3 test_gemini.py
 # Output: data/reviews_analysis_gemini_test.json
 ```
@@ -334,11 +219,3 @@ The automated pipeline (`pipeline.py`) performs the following steps:
 - Sequential Apify execution (free tier constraint)
 - Reduced logging verbosity (30s intervals for long-running tasks)
 - 20-minute timeout for review collection
-
-### Cost Estimation (Monthly)
-- **SERP API**: Free tier (250 requests/month) - ~125 runs
-- **Rainforest API**: Pay-per-request
-- **Apify API**: Free tier (limited compute hours)
-- **Gemini API**: Free tier (generous limits)
-
-**Recommendation**: Stay within free tiers for development/testing
