@@ -1,0 +1,87 @@
+# Amazon Scraper Configuration
+
+# Search query
+# Example: "garage wall hooks heavy duty", "laptop stand", "wireless mouse"
+query: "magnetic blocks for kids 100 pieces"
+
+# Amazon domain to search
+# Options: amazon.com.au, amazon.com, amazon.co.uk, amazon.de, etc.
+amazon_domain: "amazon.com.au"
+
+# Language setting for the domain
+# Format: domain|locale (e.g., amazon.com.au|en_AU, amazon.com|en_US)
+language: "amazon.com.au|en_AU"
+
+# Shipping location filter (2-letter country code)
+# Filters results to products that ship FROM this location
+# Options: AU, US, GB, DE, etc.
+shipping_location: "AU"
+
+# Number of pages to scrape
+# Each page contains approximately 48 products
+# Note: Amazon typically limits results to 7-10 pages
+pages: 2
+
+# Delay between page requests (seconds)
+# Recommended: 1.0 to be respectful to the API
+delay: 1.0
+
+# Refinement filters (rh parameter)
+# These filters are combined with commas in the API request
+refinements:
+  # Prime Domestic shipping filter
+  # Filters to products eligible for Prime domestic shipping
+  # Options:
+  #   - 6845356051 (Amazon AU Prime Domestic)
+  #   - 6845357051 (Amazon AU Prime International Shipping)
+  p_n_prime_domestic: "6845356051"
+
+  # Price range filter (in cents)
+  # Format: min-max (e.g., 3000-8000 = $30-$80)
+  # Common ranges:
+  #   - 1000-2500 ($10-$25)
+  #   - 2500-5000 ($25-$50)
+  #   - 5000-10000 ($50-$100)
+  #   - 3000-8000 ($30-$80)
+  # Set to null to disable price filtering
+  p_36: "4000-8000"
+
+# Sort parameter
+# Determines how search results are ordered
+# Options:
+#   - "review-rank" - Most reviewed products first (best for popular items)
+#   - "price-asc-rank" - Price: Low to High
+#   - "price-desc-rank" - Price: High to Low
+#   - "date-desc-rank" - Newest arrivals first
+#   - "exact-aware-popularity-rank" - Amazon's popularity algorithm
+#   - null - Default relevance (Amazon's blended algorithm)
+sort: "review-rank"
+
+# Client-side filtering (applied after API results)
+# These filters are applied to the data returned by the API
+client_filters:
+  # Minimum product rating (1.0 - 5.0)
+  # Products with lower ratings will be filtered out
+  # Set to null to disable
+  min_rating: 4.0
+
+  # Minimum number of reviews
+  # Products with fewer reviews will be filtered out
+  # Set to null to disable
+  min_reviews: 50
+
+# Review source (for pipeline.py)
+# Options:
+#   - "apify" - Use Apify API (default, free tier: 10 reviews)
+#   - "rainforest" - Use Rainforest API (currently unavailable)
+#   - "brightdata" - Use BrightData API (preview mode: 6-7 reviews)
+review_source: "apify"
+
+# Output settings
+output:
+  # Filename prefix for saved files (without extension)
+  # Files will be saved as: {filename_prefix}_raw_all.json and {filename_prefix}_filtered.json
+  filename_prefix: "output"
+
+  # Output directory
+  output_dir: "data"
